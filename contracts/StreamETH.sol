@@ -19,6 +19,8 @@ contract StreamETH is Ownable {
         Ownable.transferOwnership(_owner);
     }
 
+    receive() external payable {}
+
     /* user functions */
 
     function distribute() public {
