@@ -28,7 +28,7 @@ contract StreamETH is Ownable {
         uint256 balance = address(this).balance;
         // transfer to recipients
         for (uint256 index = 0; index < _recipients.length; index++) {
-            payable(_recipients[index]).transfer(balance * _shareBPS[index] * 10_000);
+            payable(_recipients[index]).transfer((balance * _shareBPS[index]) / 10_000);
         }
         // emit event
         emit Distributed(balance);
