@@ -5,20 +5,20 @@ import {EtherTulip} from "./EtherTulip.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract TulipBidding {
+contract TulipFloorBidding {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    mapping(uint256 => EnumerableSet.AddressSet) private bidderSet;
+    EnumerableSet.AddressSet private bidderSet;
 
-    mapping(address => mapping(uint256 => uint256)) public bids;
+    mapping(address => uint256) public bids;
 
     address public immutable feeRecipient;
     uint256 public immutable feeBps;
     address public immutable etherTulip;
 
-    event BidPlaced(uint256 tulipNumber, address buyer, uint256 price);
-    event BidRevoked(uint256 tulipNumber, address buyer);
-    event BidClaimed(uint256 tulipNumber, address bot);
+    event BidPlaced(address buyer, uint256 price);
+    event BidRevoked(address buyer);
+    event BidClaimed(address bot);
 
     constructor(
         address _feeRecipient,
@@ -30,41 +30,37 @@ contract TulipBidding {
         etherTulip = _etherTulip;
     }
 
-    function getBidderCount(uint256 tulipNumber) external view returns (uint256 count) {
-        return bidderSet[tulipNumber].length();
+    function getBidderCount() external view returns (uint256 count) {
+        return bidderSet.length();
     }
 
-    function getBidderAt(uint256 tulipNumber, uint256 bidderIndex)
-        external
-        view
-        returns (address bidder)
-    {
-        return bidderSet[tulipNumber].at(bidderIndex);
+    function getBidderAt(uint256 bidderIndex) external view returns (address bidder) {
+        return bidderSet.at(bidderIndex);
     }
 
-    function getBidders(uint256 tulipNumber) external view returns (address[] memory bidders) {
-        return bidderSet[tulipNumber].values();
+    function getBidders() external view returns (address[] memory bidders) {
+        return bidderSet.values();
     }
 
-    function placeBid(uint256 tulipNumber) external payable {
+    function placeBid() external payable {
         // increase bid
-        bids[msg.sender][tulipNumber] += msg.value;
+        bids[msg.sender] += msg.value;
         // add to bidder set
-        bidderSet[tulipNumber].add(msg.sender);
+        bidderSet.add(msg.sender);
         // emit event
-        emit BidPlaced(tulipNumber, msg.sender, bids[msg.sender][tulipNumber]);
+        emit BidPlaced(msg.sender, bids[msg.sender]);
     }
 
-    function revokeBid(uint256 tulipNumber) external {
-        uint256 bid = bids[msg.sender][tulipNumber];
+    function revokeBid() external {
+        uint256 bid = bids[msg.sender];
         // clear bid
-        delete bids[msg.sender][tulipNumber];
+        delete bids[msg.sender];
         // remove from bidder set
-        bidderSet[tulipNumber].remove(msg.sender);
+        bidderSet.remove(msg.sender);
         // return funds
         payable(msg.sender).transfer(bid);
         // emit event
-        emit BidRevoked(tulipNumber, msg.sender);
+        emit BidRevoked(msg.sender);
     }
 
     function fillDirectBid(
@@ -72,13 +68,13 @@ contract TulipBidding {
         address buyer,
         uint256 botFee
     ) external {
-        uint256 value = bids[msg.sender][tulipNumber];
+        uint256 value = bids[msg.sender];
         uint256 marketFee = (value * feeBps) / 10000;
         uint256 price = value - botFee - marketFee;
         // clear bid
-        delete bids[msg.sender][tulipNumber];
+        delete bids[msg.sender];
         // remove from bidder set
-        bidderSet[tulipNumber].remove(msg.sender);
+        bidderSet.remove(msg.sender);
         // perform purchase
         EtherTulip(etherTulip).buyTulip{value: price}(tulipNumber);
         // transfer tulip to buyer
@@ -87,23 +83,23 @@ contract TulipBidding {
         payable(msg.sender).transfer(botFee);
         payable(feeRecipient).transfer(marketFee);
         // emit event
-        emit BidClaimed(tulipNumber, msg.sender);
+        emit BidClaimed(msg.sender);
     }
 
     function fillIndirectBid(uint256 tulipNumber, address buyer) external {
-        uint256 value = bids[msg.sender][tulipNumber];
+        uint256 value = bids[msg.sender];
         uint256 marketFee = (value * feeBps) / 10000;
         uint256 price = value - marketFee;
         // clear bid
-        delete bids[msg.sender][tulipNumber];
+        delete bids[msg.sender];
         // remove from bidder set
-        bidderSet[tulipNumber].remove(msg.sender);
+        bidderSet.remove(msg.sender);
         // transfer tulip to buyer
         IERC721(etherTulip).transferFrom(msg.sender, buyer, tulipNumber);
         // pay the fees
         payable(msg.sender).transfer(price);
         payable(feeRecipient).transfer(marketFee);
         // emit event
-        emit BidClaimed(tulipNumber, msg.sender);
+        emit BidClaimed(msg.sender);
     }
 }

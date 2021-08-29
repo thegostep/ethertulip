@@ -91,17 +91,27 @@ task('deploy-bidding').setAction(async (args, { ethers, run }) => {
     await ethers.getContractFactory('StreamETH', signer)
   ).deploy(owner, recipients, shareBPS)
 
+  const constructorArgs = [
+    feeRecipient.address,
+    '200',
+    '0xd5fbd81cef9aba7464c5f17e529444918a8ecc57',
+  ]
+
   const tulipBidding = await (
     await ethers.getContractFactory('TulipBidding', signer)
-  ).deploy(
-    feeRecipient.address,
-    200,
-    '0xd5fbd81cef9aba7464c5f17e529444918a8ecc57',
-  )
+  ).deploy(constructorArgs[0], constructorArgs[1], constructorArgs[2])
 
   console.log('Deploying TulipBidding')
   console.log('  to', tulipBidding.address)
   console.log('  in', tulipBidding.deployTransaction.hash)
+
+  const tulipFloorBidding = await (
+    await ethers.getContractFactory('TulipFloorBidding', signer)
+  ).deploy(constructorArgs[0], constructorArgs[1], constructorArgs[2])
+
+  console.log('Deploying TulipFloorBidding')
+  console.log('  to', tulipFloorBidding.address)
+  console.log('  in', tulipFloorBidding.deployTransaction.hash)
 
   // verify source
 
@@ -116,11 +126,12 @@ task('deploy-bidding').setAction(async (args, { ethers, run }) => {
 
   await run('verify:verify', {
     address: tulipBidding.address,
-    constructorArguments: [
-      feeRecipient.address,
-      200,
-      '0xd5fbd81cef9aba7464c5f17e529444918a8ecc57',
-    ],
+    constructorArguments: constructorArgs,
+  })
+
+  await run('verify:verify', {
+    address: tulipFloorBidding.address,
+    constructorArguments: constructorArgs,
   })
 })
 
