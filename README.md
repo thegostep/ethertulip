@@ -18,5 +18,7 @@ https://www.smithsonianmag.com/history/there-never-was-real-tulip-fever-18096491
 
 ---
 
-Goerli: https://goerli.etherscan.io/address/0x6fa31876f1ce59371b41806BDED7356F305dB085  
-Mainnet: https://etherscan.io/address/0xd5Fbd81Cef9aBA7464C5f17E529444918a8EcC57
+| contract     | address                                                                                                               |
+| ------------ | --------------------------------------------------------------------------------------------------------------------- |
+| EtherTulip   | [0xd5Fbd81Cef9aBA7464C5f17E529444918a8EcC57](https://etherscan.io/address/0xd5Fbd81Cef9aBA7464C5f17E529444918a8EcC57) |
+| TulipBidding | [0xea5D89492407284B207B1430faC8782DF8D3ef09](https://etherscan.io/address/0xea5D89492407284B207B1430faC8782DF8D3ef09) |

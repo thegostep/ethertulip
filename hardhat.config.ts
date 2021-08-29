@@ -1,13 +1,14 @@
 import '@nomiclabs/hardhat-ethers'
 import '@nomiclabs/hardhat-etherscan'
-import { ethers } from 'ethers'
-import { formatUnits, parseUnits } from 'ethers/lib/utils'
+import '@typechain/hardhat'
+
+import { parseUnits } from 'ethers/lib/utils'
 
 import { HardhatUserConfig, task } from 'hardhat/config'
 
 const mnemonic = process.env.DEV_MNEMONIC as string
 
-task('deploy').setAction(async (args, { ethers, run }) => {
+task('deploy-tulip').setAction(async (args, { ethers, run }) => {
   // compile
 
   await run('compile')
@@ -66,11 +67,71 @@ task('deploy').setAction(async (args, { ethers, run }) => {
   })
 })
 
+task('deploy-bidding').setAction(async (args, { ethers, run }) => {
+  // compile
+
+  await run('compile')
+
+  // get signer
+
+  const signer = (await ethers.getSigners())[0]
+  console.log('Signer')
+  console.log('  at', signer.address)
+
+  // deploy contracts
+
+  const owner = '0x777B0884f97Fd361c55e472530272Be61cEb87c8'
+  const recipients = [
+    '0x360059bBD6Df9AE032e93A8E5Fa7900BBd10363A',
+    '0xe69CF6B2F44e67A7bEA652A6F73E72BB163D3D69',
+  ]
+  const shareBPS = [8000, 2000]
+
+  const feeRecipient = await (
+    await ethers.getContractFactory('StreamETH', signer)
+  ).deploy(owner, recipients, shareBPS)
+
+  const tulipBidding = await (
+    await ethers.getContractFactory('TulipBidding', signer)
+  ).deploy(
+    feeRecipient.address,
+    200,
+    '0xd5fbd81cef9aba7464c5f17e529444918a8ecc57',
+  )
+
+  console.log('Deploying TulipBidding')
+  console.log('  to', tulipBidding.address)
+  console.log('  in', tulipBidding.deployTransaction.hash)
+
+  // verify source
+
+  console.log('Verifying source on etherscan')
+
+  await tulipBidding.deployTransaction.wait(5)
+
+  await run('verify:verify', {
+    address: feeRecipient.address,
+    constructorArguments: [owner, recipients, shareBPS],
+  })
+
+  await run('verify:verify', {
+    address: tulipBidding.address,
+    constructorArguments: [
+      feeRecipient.address,
+      200,
+      '0xd5fbd81cef9aba7464c5f17e529444918a8ecc57',
+    ],
+  })
+})
+
 export default {
   networks: {
     hardhat: {
       accounts: {
         mnemonic,
+      },
+      forking: {
+        url: process.env.ETHEREUM_ARCHIVE_URL as string,
       },
     },
     goerli: {
