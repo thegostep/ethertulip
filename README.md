@@ -22,4 +22,4 @@ https://www.smithsonianmag.com/history/there-never-was-real-tulip-fever-18096491
 | ----------------- | --------------------------------------------------------------------------------------------------------------------- |
 | EtherTulip        | [0xd5Fbd81Cef9aBA7464C5f17E529444918a8EcC57](https://etherscan.io/address/0xd5Fbd81Cef9aBA7464C5f17E529444918a8EcC57) |
 | TulipBidding      | [0xF8958634163D2aCb409Bbb8d3e1E22148f30a8eC](https://etherscan.io/address/0xF8958634163D2aCb409Bbb8d3e1E22148f30a8eC) |
-| TulipFloorBidding | [0xf1Ba76d490183a10B29f4dFc89d84C1F9B41dD3d](https://etherscan.io/address/0xf1Ba76d490183a10B29f4dFc89d84C1F9B41dD3d) |
+| TulipFloorBidding | [0x76E54af5423e30c875aa61e57A021146464A1abf](https://etherscan.io/address/0x76E54af5423e30c875aa61e57A021146464A1abf) |
