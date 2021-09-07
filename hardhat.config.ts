@@ -24,9 +24,10 @@ task('deploy-tulip').setAction(async (args, { ethers, run }) => {
   const owner = '0x777B0884f97Fd361c55e472530272Be61cEb87c8'
   const recipients = [
     '0x81c50923af7D892D1EC65A84Ec64c85430FdC7bf',
-    '0xe8B0e9a71F813b36d983D276db099aDBa590F951',
+    '0x2B1634a6a6cB9cB61aC684891Dd122f4f542b05D',
     '0x360059bBD6Df9AE032e93A8E5Fa7900BBd10363A',
     '0x070dcb7ba170091f84783b224489aa8b280c1a30',
+    '0xFA10ceA919C9E403d150318ee0eccdEC57c0d941',
     '0x9Bd430B4A63178EA29ADFecA33E37f1094FF3B05',
     '0xc7bd798519B38F4d9F424F8764424C54F653C38a',
     '0xb69C80B34aEe8e42A69047be6AE59e3729Ce0ccC',
@@ -36,7 +37,9 @@ task('deploy-tulip').setAction(async (args, { ethers, run }) => {
     '0x7AAB47892181338538CeDAf0f9b119C3215771c3',
     '0xBfd2c7B0e0E18558439448c2Dfd652d8Cea6F97E',
   ]
-  const shareBPS = [5000, 2000, 700, 125, 700, 300, 700, 300, 100, 25, 25, 25]
+  const shareBPS = [
+    5000, 2000, 700, 125, 500, 300, 200, 700, 300, 100, 25, 25, 25,
+  ]
 
   const feeRecipient = await (
     await ethers.getContractFactory('StreamETH', signer)

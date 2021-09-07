@@ -18,7 +18,7 @@ contract TulipBidding {
 
     event BidPlaced(uint256 tulipNumber, address buyer, uint256 price);
     event BidRevoked(uint256 tulipNumber, address buyer);
-    event BidClaimed(uint256 tulipNumber, address bot);
+    event BidClaimed(uint256 tulipNumber, address buyer, address seller);
 
     constructor(
         address _feeRecipient,
@@ -60,25 +60,25 @@ contract TulipBidding {
         // clear bid
         delete bids[msg.sender][tulipNumber];
         // remove from bidder set
-        bidderSet[tulipNumber].remove(msg.sender);
+        require(bidderSet[tulipNumber].remove(msg.sender), "!bidder");
         // return funds
         payable(msg.sender).transfer(bid);
         // emit event
         emit BidRevoked(tulipNumber, msg.sender);
     }
 
-    function fillDirectBid(
+    function arbBid(
         uint256 tulipNumber,
         address buyer,
         uint256 botFee
     ) external {
-        uint256 value = bids[msg.sender][tulipNumber];
+        uint256 value = bids[buyer][tulipNumber];
         uint256 marketFee = (value * feeBps) / 10000;
         uint256 price = value - botFee - marketFee;
         // clear bid
-        delete bids[msg.sender][tulipNumber];
+        delete bids[buyer][tulipNumber];
         // remove from bidder set
-        bidderSet[tulipNumber].remove(msg.sender);
+        require(bidderSet[tulipNumber].remove(buyer), "!bidder");
         // perform purchase
         EtherTulip(etherTulip).buyTulip{value: price}(tulipNumber);
         // transfer tulip to buyer
@@ -87,23 +87,23 @@ contract TulipBidding {
         payable(msg.sender).transfer(botFee);
         payable(feeRecipient).transfer(marketFee);
         // emit event
-        emit BidClaimed(tulipNumber, msg.sender);
+        emit BidClaimed(tulipNumber, buyer, msg.sender);
     }
 
-    function fillIndirectBid(uint256 tulipNumber, address buyer) external {
-        uint256 value = bids[msg.sender][tulipNumber];
+    function fillBid(uint256 tulipNumber, address buyer) external {
+        uint256 value = bids[buyer][tulipNumber];
         uint256 marketFee = (value * feeBps) / 10000;
         uint256 price = value - marketFee;
         // clear bid
-        delete bids[msg.sender][tulipNumber];
+        delete bids[buyer][tulipNumber];
         // remove from bidder set
-        bidderSet[tulipNumber].remove(msg.sender);
+        require(bidderSet[tulipNumber].remove(buyer), "!bidder");
         // transfer tulip to buyer
         IERC721(etherTulip).transferFrom(msg.sender, buyer, tulipNumber);
         // pay the fees
         payable(msg.sender).transfer(price);
         payable(feeRecipient).transfer(marketFee);
         // emit event
-        emit BidClaimed(tulipNumber, msg.sender);
+        emit BidClaimed(tulipNumber, buyer, msg.sender);
     }
 }
