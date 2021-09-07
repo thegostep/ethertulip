@@ -1,4 +1,5 @@
 import '@nomiclabs/hardhat-ethers'
+import '@nomiclabs/hardhat-waffle'
 import '@nomiclabs/hardhat-etherscan'
 import '@typechain/hardhat'
 
@@ -83,20 +84,9 @@ task('deploy-bidding').setAction(async (args, { ethers, run }) => {
 
   // deploy contracts
 
-  const owner = '0x777B0884f97Fd361c55e472530272Be61cEb87c8'
-  const recipients = [
-    '0x360059bBD6Df9AE032e93A8E5Fa7900BBd10363A',
-    '0xe69CF6B2F44e67A7bEA652A6F73E72BB163D3D69',
-  ]
-  const shareBPS = [8000, 2000]
-
-  const feeRecipient = await (
-    await ethers.getContractFactory('StreamETH', signer)
-  ).deploy(owner, recipients, shareBPS)
-
   const constructorArgs = [
-    feeRecipient.address,
-    '200',
+    '0x360059bBD6Df9AE032e93A8E5Fa7900BBd10363A',
+    '500',
     '0xd5fbd81cef9aba7464c5f17e529444918a8ecc57',
   ]
 
@@ -120,12 +110,7 @@ task('deploy-bidding').setAction(async (args, { ethers, run }) => {
 
   console.log('Verifying source on etherscan')
 
-  await tulipBidding.deployTransaction.wait(5)
-
-  await run('verify:verify', {
-    address: feeRecipient.address,
-    constructorArguments: [owner, recipients, shareBPS],
-  })
+  await tulipFloorBidding.deployTransaction.wait(2)
 
   await run('verify:verify', {
     address: tulipBidding.address,
@@ -159,7 +144,6 @@ export default {
       accounts: {
         mnemonic,
       },
-      gasPrice: parseUnits('100', 'gwei').toNumber(),
     },
   },
   solidity: {
